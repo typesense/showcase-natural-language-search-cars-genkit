@@ -1,24 +1,37 @@
 {
+  "main": "lib/index.js",
+  "scripts": {
+    "start": "next start",
+    "build": "next build",
+    "build:watch": "tsc --watch",
+    "dev": "next dev",
+    "lint": "next lint",
+    "start:typesense": "docker compose up",
+    "index:typesense": "npx tsx ./scripts/indexTypesense.ts"
+  },
   "name": "gar",
   "version": "0.1.0",
   "private": true,
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  },
   "dependencies": {
+    "@genkit-ai/ai": "^0.5.10",
+    "@genkit-ai/core": "^0.5.10",
+    "@genkit-ai/dotprompt": "^0.5.10",
+    "@genkit-ai/flow": "^0.5.10",
+    "@genkit-ai/googleai": "^0.5.10",
+    "express": "^4.19.2",
+    "next": "14.2.5",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.5"
+    "typesense": "^1.8.2",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "dotenv": "^16.4.5",
     "postcss": "^8",
-    "tailwindcss": "^3.4.1"
+    "tailwindcss": "^3.4.1",
+    "typescript": "^5.5.4"
   }
 }
