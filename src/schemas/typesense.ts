@@ -1,0 +1,30 @@
+import * as z from 'zod';
+
+export const CarSchema = z.object({
+  id: z.string(),
+  manufacturer: z.string(),
+  model: z.string(),
+  year: z.number(),
+  engine_fuel_type: z.string(),
+  engine_hp: z.number(),
+  engine_cylinders: z.number(),
+  transmission_type: z.string(),
+  driven_wheels: z.string(),
+  number_of_doors: z.number(),
+  vehicle_size: z.string(),
+  vehicle_style: z.string(),
+  highway_mpg: z.number(),
+  city_mpg: z.number(),
+  popularity: z.number(),
+  msrp: z.number(),
+});
+
+export const TypesenseQuerySchema = z
+  .object({
+    query: z.string().describe('a full-text search query'),
+    filterBy: z.string(),
+  })
+  .partial();
+
+export type _CarSchemaResponse = z.infer<typeof CarSchema>;
+export type _TypesenseQuery = z.infer<typeof TypesenseQuerySchema>;
