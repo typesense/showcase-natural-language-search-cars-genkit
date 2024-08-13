@@ -22,7 +22,7 @@ export const CarSchema = z.object({
 export const TypesenseQuerySchema = z
   .object({
     query: z.string().describe('a full-text search query'),
-    filterBy: z.string(),
+    filter_by: z.string().describe('a filter query in Typesense format'),
   })
   .partial();
 
