@@ -3,9 +3,9 @@ import { SVGProps } from 'react';
 
 export default function LoaderSVG({
   className,
-  isTranscribingVoice,
+  message,
   ...props
-}: SVGProps<SVGSVGElement> & { isTranscribingVoice?: boolean }) {
+}: SVGProps<SVGSVGElement> & { message?: string }) {
   return (
     <div className='flex flex-col items-center my-10'>
       <svg
@@ -30,10 +30,8 @@ export default function LoaderSVG({
           />
         </path>
       </svg>
-      {isTranscribingVoice && (
-        <small className='text-muted-foreground'>
-          Generating Typesense query...
-        </small>
+      {message && (
+        <small className='text-muted-foreground font-light'>{message}</small>
       )}
     </div>
   );

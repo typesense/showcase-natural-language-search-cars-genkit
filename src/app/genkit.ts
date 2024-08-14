@@ -95,7 +95,7 @@ Sorting hints:
 Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.
 `
 );
-// Define a simple flow that prompts an LLM to generate menu suggestions.
+
 const generateTypesenseQuery = defineFlow(
   {
     name: 'generateTypesenseQuery',
