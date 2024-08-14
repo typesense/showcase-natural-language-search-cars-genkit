@@ -3,10 +3,10 @@
 import { callGenerateTypesenseQuery } from '@/app/genkit';
 import CarList from '@/components/CarList';
 import ExampleSearchTerms from '@/components/ExampleSearchTerms';
+import Heading from '@/components/Heading';
 import { SearchIcon } from '@/components/icons';
 import { typesense } from '@/lib/typesense';
 import { _CarSchemaResponse, _TypesenseQuery } from '@/schemas/typesense';
-import { EXAMPLE_SEARCH_TERMS } from '@/utils/utils';
 import { useState } from 'react';
 import { SearchResponse } from 'typesense/lib/Typesense/Documents';
 
@@ -45,7 +45,7 @@ export default function Home() {
 
   return (
     <main className='flex flex-col items-center px-2 py-16 max-w-screen-lg m-auto font-medium'>
-      <h1 className='text-3xl font-bold mb-4'>Cars search</h1>
+      <Heading />
       <form className='w-full flex gap-2.5 mb-4' action={getCars}>
         <input
           className='flex-1 pl-3 border-2 border-gray-700 rounded-lg placeholder:font-light text-sm'
@@ -54,7 +54,7 @@ export default function Home() {
           placeholder="Type in the car's specification, e.g. newest manual Ford, V6, under 50K..."
         />
         <button
-          className='bg-neutral-900 aspect-square w-10 grid place-content-center rounded-lg'
+          className='bg-neutral-900 aspect-square w-10 grid place-content-center rounded-lg hover:bg-neutral-800 transition'
           type='submit'
         >
           <SearchIcon className='size-5 fill-white' />
