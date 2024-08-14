@@ -7,20 +7,24 @@ import Heading from '@/components/Heading';
 import { SearchIcon } from '@/components/icons';
 import { typesense } from '@/lib/typesense';
 import { _CarSchemaResponse, _TypesenseQuery } from '@/schemas/typesense';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { SearchResponse } from 'typesense/lib/Typesense/Documents';
+import { useSearchParams, useRouter } from 'next/navigation';
 
 export default function Home() {
+  const searchParams = useSearchParams();
+  const q = searchParams.get('q') || '';
+  const router = useRouter();
+  const [query, setQuery] = useState(q);
+
   const [generatedQuery, setGeneratedQuery] = useState('');
   const [searchResponse, setSearchResponse] =
     useState<SearchResponse<_CarSchemaResponse>>();
-  const [searchParams, setSearchParams] = useState<_TypesenseQuery | null>(
-    null
-  );
+  const [typesenseSearchParams, setTypesenseSearchParams] =
+    useState<_TypesenseQuery>();
   const found = searchResponse?.found || 0;
 
-  async function getCars(formData: FormData) {
-    const q = formData.get('q')?.toString() ?? '';
+  async function getCars(q: string) {
     const generatedQ = await callGenerateTypesenseQuery(q);
     const params = {
       q: generatedQ.query || '*',
@@ -38,19 +42,31 @@ export default function Home() {
 
     setSearchResponse(searchResults);
     setGeneratedQuery(JSON.stringify(generatedQ));
-    setSearchParams(params);
+    setTypesenseSearchParams(params);
     console.log(searchResults);
     console.log(generatedQ);
   }
 
+  useEffect(() => {
+    setQuery(q);
+    q && getCars(q);
+  }, [q]);
+
   return (
     <main className='flex flex-col items-center px-2 py-16 max-w-screen-lg m-auto font-medium'>
       <Heading />
-      <form className='w-full flex gap-2.5 mb-4' action={getCars}>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          router.push(`?q=${query}`);
+        }}
+        className='w-full flex gap-2.5 mb-4'
+      >
         <input
           className='flex-1 pl-3 border-2 border-gray-700 rounded-lg placeholder:font-light text-sm'
           type='text'
-          name='q'
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
           placeholder="Type in the car's specification, e.g. newest manual Ford, V6, under 50K..."
         />
         <button
@@ -60,7 +76,7 @@ export default function Home() {
           <SearchIcon className='size-5 fill-white' />
         </button>
       </form>
-      {searchResponse && searchParams ? (
+      {searchResponse && typesenseSearchParams ? (
         <>
           <pre className='text-xs mb-4 block max-w-full overflow-auto'>
             {generatedQuery}
@@ -78,11 +94,13 @@ export default function Home() {
                   : null,
             }}
             queryKey={generatedQuery}
-            searchParams={searchParams}
+            searchParams={typesenseSearchParams}
           />
         </>
       ) : (
-        <ExampleSearchTerms onClickAction={getCars} />
+        <ExampleSearchTerms
+          onClick={(searchTerm) => router.push(`?q=${searchTerm}`)}
+        />
       )}
     </main>
   );

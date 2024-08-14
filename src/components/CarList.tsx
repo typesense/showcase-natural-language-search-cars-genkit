@@ -56,7 +56,9 @@ export default function CarList({
       {isFetchingNextPage && hasNextPage ? (
         <LoaderSVG />
       ) : (
-        <div className='w-full text-center text-sm'>No more cars found</div>
+        <div className='w-full text-center text-sm mt-4'>
+          No more cars found.
+        </div>
       )}
       <div ref={ref} />
     </>
