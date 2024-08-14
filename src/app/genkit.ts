@@ -33,7 +33,7 @@ You are assisting a user in searching for cars. Convert their query into the app
 
 Matching values: The syntax is {fieldName} follow by a match operator : and a string value or an array of string values each separated by a comma. Do not encapsulate the value in double quote or single quote. Examples:
 - model:[prius]
-- manufacturer:[BMW,Nissan] returns cars that are manufactured by BMW OR Nissan.
+- make:[BMW,Nissan] returns cars that are manufactured by BMW OR Nissan.
 
 Numeric Filters: Use :[min..max] for ranges, or comparison operators like :>, :<, :>=, :<=, :=. Examples:
  - year:[2000..2020]
@@ -54,26 +54,26 @@ Negation: Use :!= to exclude values. Examples:
  - author:!=[JK Rowling,Gilbert Patten]
 
 Available properties for filtering and their corresponding data type:
- - manufacturer     : string
+ - make             : string
  - model            : string
  - year             : int64
- - engine_fuel_type : string
+ - engine_fuel_type : string  enum:regular unleaded,diesel,electric,flex-fuel (premium unleaded recommended/E85),flex-fuel (premium unleaded required/E85),premium unleaded (required),premium unleaded (recommended),natural gas,flex-fuel (unleaded/E85)
  - engine_hp        : float64
  - engine_cylinders : int64
- - transmission_type: string enum(MANUAL, AUTO)
- - driven_wheels    : string enum(rear wheel drive, front wheel drive, all wheel drive)
+ - transmission_type: string  enum:MANUAL,AUTOMATIC,AUTOMATED_MANUAL,DIRECT_DRIVE
+ - driven_wheels    : string  enum:rear wheel drive,front wheel drive,all wheel drive,four wheel drive
  - number_of_doors  : int64
- - vehicle_size     : string
- - vehicle_style    : string
+ - vehicle_size     : string  enum:Compact,Large,Midsize
+ - vehicle_style    : string  enum:Cargo Minivan,4dr SUV,Crew Cab Pickup,Wagon,Passenger Van,4dr Hatchback,Cargo Van,Passenger Minivan,2dr Hatchback,Coupe,Regular Cab Pickup,Sedan,Extended Cab Pickup,Convertible,Convertible SUV,2dr SUV
  - highway_mpg      : int64
  - city_mpg         : int64
  - popularity       : int64
- - msrp             : int64 (manufacturer's suggested retail price, in USD $)
+ - msrp             : int64   (in USD $)
 
 IMPORTANT NOTES:
  - ORs: Do not use || with the same {fieldName}. Instead, use an array of values.
-    - Correct: manufacturer:[Honda,BMW] && transmission_type:MANUAL
-    - Incorrect: (manufacturer:Honda || manufacturer:BMW) && transmission_type:MANUAL
+    - Correct: make:[Honda,BMW] && transmission_type:MANUAL
+    - Incorrect: (make:Honda || make:BMW) && transmission_type:MANUAL
  - Query Field: Include query only if other filter properties are insufficient to capture the user's intent.
 
 ### User-Supplied Query ###
@@ -82,7 +82,7 @@ IMPORTANT NOTES:
 
 ### Output Instructions ###
 
-Provide valid JSON with the correct filter format, including only non-null fields. Do not add extra text or explanations.
+Provide the valid JSON with the correct filter format, only include fields with non-null values. Do not add extra text or explanations.
 `
 );
 // Define a simple flow that prompts an LLM to generate menu suggestions.

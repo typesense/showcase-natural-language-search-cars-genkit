@@ -38,7 +38,7 @@ const PATH_TO_DATASET = './scripts/data/cars.jsonl';
     name: COLLECTION_NAME,
     fields: [
       {
-        name: 'manufacturer',
+        name: 'make',
         type: 'string',
         facet: true,
       },
@@ -50,7 +50,6 @@ const PATH_TO_DATASET = './scripts/data/cars.jsonl';
       {
         name: 'year',
         type: 'int32',
-        facet: true,
       },
       {
         name: 'engine_fuel_type',
@@ -60,12 +59,10 @@ const PATH_TO_DATASET = './scripts/data/cars.jsonl';
       {
         name: 'engine_hp',
         type: 'float',
-        facet: true,
       },
       {
         name: 'engine_cylinders',
         type: 'int32',
-        facet: true,
       },
       {
         name: 'transmission_type',
@@ -80,7 +77,10 @@ const PATH_TO_DATASET = './scripts/data/cars.jsonl';
       {
         name: 'number_of_doors',
         type: 'int32',
-        facet: true,
+      },
+      {
+        name: 'market_category',
+        type: 'string',
       },
       {
         name: 'vehicle_size',

@@ -2,7 +2,7 @@ import * as z from 'zod';
 
 export const CarSchema = z.object({
   id: z.string(),
-  manufacturer: z.string(),
+  make: z.string(),
   model: z.string(),
   year: z.number(),
   engine_fuel_type: z.string(),
@@ -10,6 +10,7 @@ export const CarSchema = z.object({
   engine_cylinders: z.number(),
   transmission_type: z.string(),
   driven_wheels: z.string(),
+  market_category: z.string(),
   number_of_doors: z.number(),
   vehicle_size: z.string(),
   vehicle_style: z.string(),
