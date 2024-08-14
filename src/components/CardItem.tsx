@@ -1,6 +1,10 @@
 import { _CarSchemaResponse } from '@/schemas/typesense';
 import { Badge } from './ui/badge';
-import { capitalizeFirstLetter, USD_Formatter } from '@/utils/utils';
+import {
+  capitalizeFirstLetter,
+  TRANSMISSION_TYPE,
+  USD_Formatter,
+} from '@/utils/utils';
 
 export default function CardItem({ car }: { car: _CarSchemaResponse }) {
   return (
@@ -24,7 +28,11 @@ export default function CardItem({ car }: { car: _CarSchemaResponse }) {
         </div>
         <div>
           Transmission type:{' '}
-          {capitalizeFirstLetter(car.transmission_type.toLowerCase())}
+          {
+            TRANSMISSION_TYPE[
+              car.transmission_type as keyof typeof TRANSMISSION_TYPE
+            ]
+          }
         </div>
         <div>Fuel type: {car.engine_fuel_type}</div>
         <div>Number of doors: {car.number_of_doors}</div>

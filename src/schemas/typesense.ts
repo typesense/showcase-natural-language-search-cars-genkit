@@ -22,8 +22,15 @@ export const CarSchema = z.object({
 
 export const TypesenseQuerySchema = z
   .object({
-    query: z.string().describe('a full-text search query'),
+    query: z
+      .string()
+      .describe(
+        'a full-text search query of properties: make, model, market_category of the car'
+      ),
     filter_by: z.string().describe('a filter query in Typesense format'),
+    sort_by: z
+      .string()
+      .describe('contains data properties to be sorted by Typesense'),
   })
   .partial();
 

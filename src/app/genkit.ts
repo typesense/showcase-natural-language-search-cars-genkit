@@ -29,7 +29,9 @@ const typesensePrompt = defineDotprompt(
   `
 You are assisting a user in searching for cars. Convert their query into the appropriate Typesense filter format based on the instructions below.
 
-### Typesense Filter Query Syntax ###
+### Typesense Query Syntax ###
+
+## Filtering ##
 
 Matching values: The syntax is {fieldName} follow by a match operator : and a string value or an array of string values each separated by a comma. Do not encapsulate the value in double quote or single quote. Examples:
 - model:[prius]
@@ -70,11 +72,23 @@ Available properties for filtering and their corresponding data type:
  - popularity       : int64
  - msrp             : int64   (in USD $)
 
-IMPORTANT NOTES:
- - ORs: Do not use || with the same {fieldName}. Instead, use an array of values.
+## Sorting ##
+
+You can only sort maximum 3 sort fields at a time. The syntax is {fieldName}: follow by asc (ascending) or dsc (descending), if sort by multiple fields, separate them by a comma. Examples:
+ - msrp:desc
+ - year:asc,city_mpg:desc
+
+Available fields for sorting: all numeric fields specified above. Do not sort fields with non-numerical values.
+
+Sorting hints:
+  - When a user says something like "good gas mileage", sort by highway_mpg or/and city_mpg.
+  - When a user says something like "powerful", sort by engine_hp.
+
+### IMPORTANT NOTES ###
+ - ORs: Do not use || with the same {fieldName} when filtering. Instead, use an array of values.
     - Correct: make:[Honda,BMW] && transmission_type:MANUAL
     - Incorrect: (make:Honda || make:BMW) && transmission_type:MANUAL
- - Query Field: Include query only if other filter properties are insufficient to capture the user's intent.
+ - Query Field: Include query only if other filter/sorting properties are insufficient to capture the user's intent.
 
 ### User-Supplied Query ###
 
@@ -82,7 +96,7 @@ IMPORTANT NOTES:
 
 ### Output Instructions ###
 
-Provide the valid JSON with the correct filter format, only include fields with non-null values. Do not add extra text or explanations.
+Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.
 `
 );
 // Define a simple flow that prompts an LLM to generate menu suggestions.
