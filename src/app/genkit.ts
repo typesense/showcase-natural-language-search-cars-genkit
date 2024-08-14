@@ -31,7 +31,7 @@ You are assisting a user in searching for cars. Convert their query into the app
 
 ### Typesense Query Syntax ###
 
-## Filtering ##
+## Filtering (for the filter_by property) ##
 
 Matching values: The syntax is {fieldName} follow by a match operator : and a string value or an array of string values each separated by a comma. Do not encapsulate the value in double quote or single quote. Examples:
 - model:[prius]
@@ -55,7 +55,7 @@ Negation: Use :!= to exclude values. Examples:
  - author:!=JK Rowling
  - author:!=[JK Rowling,Gilbert Patten]
 
-Available properties for filtering and their corresponding data type:
+Allowed fields for filtering and their corresponding data type:
  - make             : string
  - model            : string
  - year             : int64
@@ -72,23 +72,20 @@ Available properties for filtering and their corresponding data type:
  - popularity       : int64
  - msrp             : int64   (in USD $)
 
-## Sorting ##
+## Sorting (for the sort_by property) ##
 
 You can only sort maximum 3 sort fields at a time. The syntax is {fieldName}: follow by asc (ascending) or dsc (descending), if sort by multiple fields, separate them by a comma. Examples:
  - msrp:desc
  - year:asc,city_mpg:desc
 
-Available fields for sorting: all numeric fields specified above. Do not sort fields with non-numerical values.
+Allowed fields for sorting: all numeric fields specified in the filtering section above.
 
 Sorting hints:
-  - When a user says something like "good gas mileage", sort by highway_mpg or/and city_mpg.
+  - When a user says something like "good mileage", sort by highway_mpg or/and city_mpg.
   - When a user says something like "powerful", sort by engine_hp.
 
 ### IMPORTANT NOTES ###
- - ORs: Do not use || with the same {fieldName} when filtering. Instead, use an array of values.
-    - Correct: make:[Honda,BMW] && transmission_type:MANUAL
-    - Incorrect: (make:Honda || make:BMW) && transmission_type:MANUAL
- - Query Field: Include query only if other filter/sorting properties are insufficient to capture the user's intent.
+ - Query Field: Include query only if both filter_by and sort_by are insufficient to capture the user's intent.
 
 ### User-Supplied Query ###
 
@@ -100,9 +97,9 @@ Provide the valid JSON with the correct filter and sorting format, only include 
 `
 );
 // Define a simple flow that prompts an LLM to generate menu suggestions.
-const menuSuggestionFlow = defineFlow(
+const generateTypesenseQuery = defineFlow(
   {
-    name: 'menuSuggestionFlow',
+    name: 'generateTypesenseQuery',
     inputSchema: z.string(),
     outputSchema: TypesenseQuerySchema,
   },
@@ -116,8 +113,8 @@ const menuSuggestionFlow = defineFlow(
   }
 );
 
-export async function callMenuSuggestionFlow(theme: string) {
-  const flowResponse = await runFlow(menuSuggestionFlow, theme);
+export async function callGenerateTypesenseQuery(theme: string) {
+  const flowResponse = await runFlow(generateTypesenseQuery, theme);
   console.log(flowResponse);
   return flowResponse;
 }

@@ -14,12 +14,12 @@ export default function CardItem({ car }: { car: _CarSchemaResponse }) {
           {car.year} <span className='text-[10px]'>|</span>
           {car.vehicle_style}
         </div>
-        <div className='flex items-center gap-2'>
-          <h2 className='font-bold text-xl'>
-            {car.make} {car.model}
-          </h2>
-          <Badge className='text-[10px] font-light'>{car.vehicle_size}</Badge>
-        </div>
+        <h2 className='font-bold text-xl'>
+          {car.make} {car.model}
+          <Badge className='text-[10px] font-light leading-tight ml-2 relative bottom-[3px]'>
+            {car.vehicle_size}
+          </Badge>
+        </h2>
       </div>
       <div className='font-normal text-sm leading-relaxed'>
         <div>{capitalizeFirstLetter(car.driven_wheels)}</div>

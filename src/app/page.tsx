@@ -1,46 +1,56 @@
 'use client';
 
-import { callMenuSuggestionFlow } from '@/app/genkit';
-import CardItem from '@/components/CardItem';
+import { callGenerateTypesenseQuery } from '@/app/genkit';
+import CarList from '@/components/CarList';
+import ExampleSearchTerms from '@/components/ExampleSearchTerms';
 import { SearchIcon } from '@/components/icons';
 import { typesense } from '@/lib/typesense';
-import { _CarSchemaResponse } from '@/schemas/typesense';
+import { _CarSchemaResponse, _TypesenseQuery } from '@/schemas/typesense';
+import { EXAMPLE_SEARCH_TERMS } from '@/utils/utils';
 import { useState } from 'react';
 import { SearchResponse } from 'typesense/lib/Typesense/Documents';
 
 export default function Home() {
-  const [menuItem, setMenu] = useState<string>('');
+  const [generatedQuery, setGeneratedQuery] = useState('');
   const [searchResponse, setSearchResponse] =
     useState<SearchResponse<_CarSchemaResponse>>();
+  const [searchParams, setSearchParams] = useState<_TypesenseQuery | null>(
+    null
+  );
+  const found = searchResponse?.found || 0;
 
-  async function getMenuItem(formData: FormData) {
-    const theme = formData.get('theme')?.toString() ?? '';
-    const suggestion = await callMenuSuggestionFlow(theme);
-
+  async function getCars(formData: FormData) {
+    const q = formData.get('q')?.toString() ?? '';
+    const generatedQ = await callGenerateTypesenseQuery(q);
+    const params = {
+      q: generatedQ.query || '*',
+      filter_by: generatedQ.filter_by || '',
+      sort_by: generatedQ.sort_by || 'popularity:desc',
+    };
     const searchResults = await typesense
       .collections<_CarSchemaResponse>('cars')
       .documents()
       .search({
-        q: suggestion.query || '*',
+        ...params,
         query_by: 'make,model,market_category',
-        filter_by: suggestion.filter_by || '',
-        sort_by: suggestion.sort_by || 'popularity:desc',
         per_page: 12,
       });
+
     setSearchResponse(searchResults);
+    setGeneratedQuery(JSON.stringify(generatedQ));
+    setSearchParams(params);
     console.log(searchResults);
-    console.log(suggestion);
-    setMenu(JSON.stringify(suggestion));
+    console.log(generatedQ);
   }
 
   return (
     <main className='flex flex-col items-center px-2 py-16 max-w-screen-lg m-auto font-medium'>
       <h1 className='text-3xl font-bold mb-4'>Cars search</h1>
-      <form className='w-full flex gap-2.5' action={getMenuItem}>
+      <form className='w-full flex gap-2.5 mb-4' action={getCars}>
         <input
-          className='flex-1 pl-3 border-2 border-gray-700 rounded-xl placeholder:font-light text-sm'
+          className='flex-1 pl-3 border-2 border-gray-700 rounded-lg placeholder:font-light text-sm'
           type='text'
-          name='theme'
+          name='q'
           placeholder="Type in the car's specification, e.g. newest manual Ford, V6, under 50K..."
         />
         <button
@@ -50,17 +60,30 @@ export default function Home() {
           <SearchIcon className='size-5 fill-white' />
         </button>
       </form>
-      <pre className='text-xs my-4 block max-w-full overflow-auto'>
-        {menuItem}
-      </pre>
-      <div className='self-start mb-2'>
-        Found {searchResponse?.found || 0} results.
-      </div>
-      <ul className='w-full grid grid-cols-3 gap-4 max-sm:grid-cols-1 max-lg:grid-cols-2'>
-        {searchResponse?.hits?.map(({ document }) => (
-          <CardItem car={document} key={document.id} />
-        ))}
-      </ul>
+      {searchResponse && searchParams ? (
+        <>
+          <pre className='text-xs mb-4 block max-w-full overflow-auto'>
+            {generatedQuery}
+          </pre>
+          <div className='self-start mb-2'>
+            {found != 0 && `Found ${found} results.`}
+          </div>
+          <CarList
+            initialData={{
+              data: searchResponse.hits,
+              nextPage:
+                1 * (searchResponse.request_params.per_page || 0) <
+                searchResponse.found
+                  ? 2
+                  : null,
+            }}
+            queryKey={generatedQuery}
+            searchParams={searchParams}
+          />
+        </>
+      ) : (
+        <ExampleSearchTerms />
+      )}
     </main>
   );
 }
