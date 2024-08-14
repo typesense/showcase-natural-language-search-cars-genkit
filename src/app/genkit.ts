@@ -34,13 +34,12 @@ You are assisting a user in searching for cars. Convert their query into the app
 ## Filtering (for the filter_by property) ##
 
 Matching values: The syntax is {fieldName} follow by a match operator : and a string value or an array of string values each separated by a comma. Do not encapsulate the value in double quote or single quote. Examples:
-- model:[prius]
+- model:prius
 - make:[BMW,Nissan] returns cars that are manufactured by BMW OR Nissan.
 
 Numeric Filters: Use :[min..max] for ranges, or comparison operators like :>, :<, :>=, :<=, :=. Examples:
  - year:[2000..2020]
  - highway_mpg:>40
- - city_mpg:[30..100,40] (Filter docs where value is between 30 to 100 or exactly 40).
  - msrp:=30000
 
 Multiple Conditions: Separate conditions with &&. Examples:
@@ -48,12 +47,12 @@ Multiple Conditions: Separate conditions with &&. Examples:
  - categories:=Shoes && categories:=Outdoor
 
 OR Conditions Across Fields: Use || only for different fields. Examples:
- - color:blue || category:shoe
- - (color:blue || category:shoe) && in_stock:true
+ - vehicle_size:Large || vehicle_style:Wagon
+ - (vehicle_size:Large || vehicle_style:Wagon) && year:>2010
 
 Negation: Use :!= to exclude values. Examples:
- - author:!=JK Rowling
- - author:!=[JK Rowling,Gilbert Patten]
+ - make:!=Nissan
+ - make:!=[Nissan,BMW]
 
 Allowed fields for filtering and their corresponding data type:
  - make             : string
