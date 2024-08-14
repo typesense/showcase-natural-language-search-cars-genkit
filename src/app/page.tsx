@@ -82,7 +82,7 @@ export default function Home() {
           />
         </>
       ) : (
-        <ExampleSearchTerms />
+        <ExampleSearchTerms onClickAction={getCars} />
       )}
     </main>
   );
