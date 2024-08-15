@@ -24,14 +24,14 @@ export default function Home() {
   const [loadingState, setLoadingState] = useState<
     'generating' | 'searching' | 'finished'
   >('finished');
-  const [searchResponse, setSearchResponse] =
-    useState<SearchResponse<_CarSchemaResponse>>();
-  const [typesenseSearchParams, setTypesenseSearchParams] = useState<{
+
+  const [data, setData] = useState<{
     generatedQueryString: string;
     params: _TypesenseQuery;
+    searchResponse: SearchResponse<_CarSchemaResponse>;
   }>();
 
-  const found = searchResponse?.found || 0;
+  const found = data?.searchResponse.found || 0;
   const nextPage = 1 * TYPESENSE_PER_PAGE < found ? 2 : null;
 
   async function getCars(q: string) {
@@ -47,7 +47,7 @@ export default function Home() {
         sort_by: generatedQ.sort_by || 'popularity:desc',
       };
 
-      const searchResults = await typesense
+      const searchResponse = await typesense
         .collections<_CarSchemaResponse>('cars')
         .documents()
         .search({
@@ -56,10 +56,10 @@ export default function Home() {
           per_page: TYPESENSE_PER_PAGE,
         });
 
-      setSearchResponse(searchResults);
-      setTypesenseSearchParams({
+      setData({
         generatedQueryString: JSON.stringify(generatedQ),
         params,
+        searchResponse,
       });
     } catch (error) {
       console.log(error);
@@ -74,13 +74,13 @@ export default function Home() {
           </ToastAction>
         ),
       });
-      setTypesenseSearchParams(undefined);
     } finally {
       setLoadingState('finished');
     }
   }
 
   useEffect(() => {
+    setData(undefined);
     q && getCars(q);
   }, [q]);
 
@@ -94,11 +94,11 @@ export default function Home() {
         />
       );
 
-    if (searchResponse && typesenseSearchParams)
+    if (data)
       return (
         <>
           <pre className='text-xs mb-4 block max-w-full overflow-auto'>
-            {typesenseSearchParams.generatedQueryString}
+            {data.generatedQueryString}
           </pre>
           {found == 0 ? (
             <div className='mt-20 text-light'>
@@ -111,11 +111,11 @@ export default function Home() {
               </div>
               <CarList
                 initialData={{
-                  data: searchResponse.hits,
+                  data: data.searchResponse.hits,
                   nextPage,
                 }}
-                queryKey={typesenseSearchParams.generatedQueryString}
-                searchParams={typesenseSearchParams.params}
+                queryKey={data.generatedQueryString}
+                searchParams={data.params}
               />
             </>
           )}
