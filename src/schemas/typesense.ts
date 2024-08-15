@@ -25,12 +25,10 @@ export const TypesenseQuerySchema = z
     query: z
       .string()
       .describe(
-        'a full-text search query of properties: make, model, market_category of the car'
+        'a full-text search query of the car properties: make, model and market_category'
       ),
     filter_by: z.string().describe('a filter query in Typesense format'),
-    sort_by: z
-      .string()
-      .describe('contains data properties to be sorted by Typesense'),
+    sort_by: z.string().describe('a sorting query in Typesense format'),
   })
   .partial();
 

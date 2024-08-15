@@ -19,7 +19,7 @@ export default function Form({ q }: { q: string }) {
       className='w-full flex gap-2.5 mb-4'
     >
       <input
-        className='flex-1 pl-3 border-2 border-gray-700 rounded-lg placeholder:font-light text-sm'
+        className='flex-1 px-3 border-2 border-gray-700 rounded-lg placeholder:font-light text-sm'
         type='text'
         value={query}
         onChange={(e) => setQuery(e.target.value)}

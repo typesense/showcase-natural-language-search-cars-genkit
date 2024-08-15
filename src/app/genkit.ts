@@ -77,6 +77,7 @@ Sorting hints:
 | engine_cylinders  | int64     | Yes    | Yes  | N/A                                                                                                         | N/A        |
 | transmission_type | string    | Yes    | No   | MANUAL, AUTOMATIC, AUTOMATED_MANUAL, DIRECT_DRIVE                                                           | N/A        |
 | driven_wheels     | string    | Yes    | No   | rear wheel drive, front wheel drive, all wheel drive, four wheel drive                                      | N/A        |
+| market_category   | string    | No     | No   | N/A                                                                                                         | N/A        |
 | number_of_doors   | int64     | Yes    | No   | N/A                                                                                                         | N/A        |
 | vehicle_size      | string    | Yes    | No   | Compact, Large, Midsize                                                                                     | N/A        |
 | vehicle_style     | string    | Yes    | No   | Cargo Minivan, 4dr SUV, Crew Cab Pickup, Wagon, Passenger Van, 4dr Hatchback, Cargo Van, Passenger Minivan, 2dr Hatchback, Coupe, Regular Cab Pickup, Sedan, Extended Cab Pickup, Convertible, Convertible SUV, 2dr SUV | N/A        |
