@@ -27,7 +27,7 @@ const typesensePrompt = defineDotprompt(
     },
   },
   `
-You are assisting a user in searching for cars. Convert their query into the appropriate Typesense filter format based on the instructions below.
+You are assisting a user in searching for cars. Convert their query into the appropriate Typesense query format based on the instructions below.
 
 ### Typesense Query Syntax ###
 
