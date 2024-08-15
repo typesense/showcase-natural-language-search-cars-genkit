@@ -54,37 +54,39 @@ Negation: Use :!= to exclude values. Examples:
  - make:!=Nissan
  - make:!=[Nissan,BMW]
 
-Allowed fields for filtering and their corresponding data type:
- - make             : string
- - model            : string
- - year             : int64
- - engine_fuel_type : string  enum:regular unleaded,diesel,electric,flex-fuel (premium unleaded recommended/E85),flex-fuel (premium unleaded required/E85),premium unleaded (required),premium unleaded (recommended),natural gas,flex-fuel (unleaded/E85)
- - engine_hp        : float64
- - engine_cylinders : int64
- - transmission_type: string  enum:MANUAL,AUTOMATIC,AUTOMATED_MANUAL,DIRECT_DRIVE
- - driven_wheels    : string  enum:rear wheel drive,front wheel drive,all wheel drive,four wheel drive
- - number_of_doors  : int64
- - vehicle_size     : string  enum:Compact,Large,Midsize
- - vehicle_style    : string  enum:Cargo Minivan,4dr SUV,Crew Cab Pickup,Wagon,Passenger Van,4dr Hatchback,Cargo Van,Passenger Minivan,2dr Hatchback,Coupe,Regular Cab Pickup,Sedan,Extended Cab Pickup,Convertible,Convertible SUV,2dr SUV
- - highway_mpg      : int64
- - city_mpg         : int64
- - popularity       : int64
- - msrp             : int64   (in USD $)
-
 ## Sorting (for the sort_by property) ##
 
 You can only sort maximum 3 sort fields at a time. The syntax is {fieldName}: follow by asc (ascending) or dsc (descending), if sort by multiple fields, separate them by a comma. Examples:
  - msrp:desc
  - year:asc,city_mpg:desc
 
-Allowed fields for sorting: all numeric fields specified in the filtering section above.
-
 Sorting hints:
   - When a user says something like "good mileage", sort by highway_mpg or/and city_mpg.
   - When a user says something like "powerful", sort by engine_hp.
+  - When a user says something like "latest", sort by year.
+
+## Car properties ##
+
+| Name              | Data Type | Filter | Sort | Enum Values                                                                                                 | Description|
+|-------------------|-----------|--------|------|-------------------------------------------------------------------------------------------------------------|------------|
+| make              | string    | Yes    | No   | N/A                                                                                                         | N/A        |
+| model             | string    | Yes    | No   | N/A                                                                                                         | N/A        |
+| year              | int64     | Yes    | Yes  | N/A                                                                                                         | N/A        |
+| engine_fuel_type  | string    | Yes    | No   | regular unleaded, diesel, electric, flex-fuel (premium unleaded recommended/E85), flex-fuel (premium unleaded required/E85), premium unleaded (required), premium unleaded (recommended), natural gas, flex-fuel (unleaded/E85) | N/A        |
+| engine_hp         | float64   | Yes    | Yes  | N/A                                                                                                         | N/A        |
+| engine_cylinders  | int64     | Yes    | Yes  | N/A                                                                                                         | N/A        |
+| transmission_type | string    | Yes    | No   | MANUAL, AUTOMATIC, AUTOMATED_MANUAL, DIRECT_DRIVE                                                           | N/A        |
+| driven_wheels     | string    | Yes    | No   | rear wheel drive, front wheel drive, all wheel drive, four wheel drive                                      | N/A        |
+| number_of_doors   | int64     | Yes    | No   | N/A                                                                                                         | N/A        |
+| vehicle_size      | string    | Yes    | No   | Compact, Large, Midsize                                                                                     | N/A        |
+| vehicle_style     | string    | Yes    | No   | Cargo Minivan, 4dr SUV, Crew Cab Pickup, Wagon, Passenger Van, 4dr Hatchback, Cargo Van, Passenger Minivan, 2dr Hatchback, Coupe, Regular Cab Pickup, Sedan, Extended Cab Pickup, Convertible, Convertible SUV, 2dr SUV | N/A        |
+| highway_mpg       | int64     | Yes    | Yes  | N/A                                                                                                         | N/A        |
+| city_mpg          | int64     | Yes    | Yes  | N/A                                                                                                         | N/A        |
+| popularity        | int64     | Yes    | Yes  | N/A                                                                                                         | N/A        |
+| msrp              | int64     | Yes    | Yes  | N/A                                                                                                         | in USD $   |
 
 ### IMPORTANT NOTES ###
- - Query Field: Include query only if both filter_by and sort_by are insufficient to capture the user's intent.
+ - Query Field: Include query only if both filter_by and sort_by are inadequate.
 
 ### User-Supplied Query ###
 
