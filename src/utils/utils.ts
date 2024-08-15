@@ -21,3 +21,5 @@ export const EXAMPLE_SEARCH_TERMS = [
   'At least 200hp, must not be of European car brands',
   'Newest sedans, v6, above 300hp, best gas mileage',
 ];
+
+export const TYPESENSE_PER_PAGE = 12;

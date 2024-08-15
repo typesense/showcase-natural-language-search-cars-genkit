@@ -22,7 +22,7 @@ export default function CardItem({ car }: { car: _CarSchemaResponse }) {
         </h2>
       </div>
       <div className='font-normal text-sm leading-relaxed'>
-        <div>{capitalizeFirstLetter(car.driven_wheels)}</div>
+        <div>Drive wheel: {capitalizeFirstLetter(car.driven_wheels)}</div>
         <div>
           Engine: V{car.engine_cylinders} / {car.engine_hp} horsepower
         </div>
