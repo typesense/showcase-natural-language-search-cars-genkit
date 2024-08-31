@@ -53,6 +53,13 @@ OR Conditions Across Fields: Use || only for different fields. Examples:
 Negation: Use :!= to exclude values. Examples:
  - make:!=Nissan
  - make:!=[Nissan,BMW]
+ 
+If any string values have parentheses, surround the value with backticks to escape them.
+
+For eg, if a field has the value "premium unleaded (required)", and you need to use it in a filter_by expression, then you would use it like this:
+
+- fuel_type:\`premium unleaded (required)\`
+- fuel_type!:\`premium unleaded (required)\`  
 
 ## Sorting (for the sort_by property) ##
 
@@ -77,7 +84,7 @@ Sorting hints:
 | engine_cylinders  | int64     | Yes    | Yes  | N/A                                                                                                         | N/A        |
 | transmission_type | string    | Yes    | No   | MANUAL, AUTOMATIC, AUTOMATED_MANUAL, DIRECT_DRIVE                                                           | N/A        |
 | driven_wheels     | string    | Yes    | No   | rear wheel drive, front wheel drive, all wheel drive, four wheel drive                                      | N/A        |
-| market_category   | string    | No     | No   | N/A                                                                                                         | N/A        |
+| market_category   | string    | Yes    | No   | Crossover, Diesel, Exotic, Factory Tuner, Flex Fuel, Hatchback, High-Performance, Hybrid,  Luxury, Performance        | N/A        |
 | number_of_doors   | int64     | Yes    | No   | N/A                                                                                                         | N/A        |
 | vehicle_size      | string    | Yes    | No   | Compact, Large, Midsize                                                                                     | N/A        |
 | vehicle_style     | string    | Yes    | No   | Cargo Minivan, 4dr SUV, Crew Cab Pickup, Wagon, Passenger Van, 4dr Hatchback, Cargo Van, Passenger Minivan, 2dr Hatchback, Coupe, Regular Cab Pickup, Sedan, Extended Cab Pickup, Convertible, Convertible SUV, 2dr SUV | N/A        |

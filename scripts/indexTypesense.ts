@@ -80,7 +80,8 @@ const PATH_TO_DATASET = './scripts/data/cars.jsonl';
       },
       {
         name: 'market_category',
-        type: 'string',
+        type: 'string[]',
+        facet: true,
       },
       {
         name: 'vehicle_size',

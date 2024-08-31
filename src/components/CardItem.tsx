@@ -36,7 +36,7 @@ export default function CardItem({ car }: { car: _CarSchemaResponse }) {
         </div>
         <div>Fuel type: {car.engine_fuel_type}</div>
         <div>Number of doors: {car.number_of_doors}</div>
-        <div>Market categories: {car.market_category || 'N/A'}</div>
+        <div>Market categories: {Array.isArray(car.market_category) ? car.market_category.join(', ') : 'N/A'}</div>
       </div>
       <div className='flex justify-between text-lg'>
         <div className='flex flex-col'>
