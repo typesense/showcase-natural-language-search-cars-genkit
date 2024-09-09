@@ -27,8 +27,8 @@ export const EXAMPLE_SEARCH_TERMS = [
   'Electric cars under 30K',
   'High performance Italian cars, above 700hp',
   'Luxury car without premium fuel',
-  'Luxury hybrid car without premium fuel that\'s not an audi or a cadillac',
-  'Hybrid cars with at least a city mileage of 25 and highway mileage of 40'
+  "Luxury hybrid car without premium fuel that's not an audi or a cadillac",
+  'Hybrid cars with at least a city mileage of 25 and highway mileage of 40',
 ];
 
 export const TYPESENSE_PER_PAGE = 12;

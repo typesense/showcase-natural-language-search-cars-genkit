@@ -1,5 +1,4 @@
 'use client';
-
 import { callGenerateTypesenseQuery } from '@/app/genkit';
 import CarList from '@/components/CarList';
 import ExampleSearchTerms from '@/components/ExampleSearchTerms';
@@ -14,6 +13,7 @@ import LoaderSVG from '@/components/LoaderSVG';
 import { useToast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { TYPESENSE_PER_PAGE } from '@/utils/utils';
+import Header from '@/components/Header';
 
 export default function Home() {
   const { toast } = useToast();
@@ -130,7 +130,8 @@ export default function Home() {
   };
 
   return (
-    <main className='flex flex-col items-center px-2 py-16 max-w-screen-lg m-auto font-medium'>
+    <main className='flex flex-col items-center px-2 py-10 max-w-screen-lg m-auto font-medium'>
+      <Header />
       <Heading />
       <Form q={q} />
       {render()}
