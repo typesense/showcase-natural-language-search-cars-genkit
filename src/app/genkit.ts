@@ -8,7 +8,7 @@ import { dotprompt, defineDotprompt } from '@genkit-ai/dotprompt';
 import { _CarSchemaResponse, TypesenseQuerySchema } from '@/schemas/typesense';
 import { typesense } from '@/lib/typesense';
 
-const MAX_FACET_VALUES = Number(process.env.MAX_FACET_VALUES || '20');
+const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
 
 defineSchema('TypesenseQuery', TypesenseQuerySchema);
 
@@ -125,8 +125,8 @@ Sorting hints:
 | msrp             | int64     | Yes    | Yes  | N/A          | in USD $   |
 ${await getFieldEnumValues()}
 
-### IMPORTANT NOTES ###
- - Query Field: Include query only if both filter_by and sort_by are inadequate.
+### Query (for the query property) ###
+Include query only if both filter_by and sort_by are inadequate.
 
 ### User-Supplied Query ###
 
