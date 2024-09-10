@@ -5,7 +5,7 @@ const GITHUB_LINK =
 
 export default function Header() {
   return (
-    <header className=' w-full flex justify-end mb-2'>
+    <header className='w-full flex justify-end mb-2'>
       <a href={GITHUB_LINK} target='_blank' rel='noopener noreferrer'>
         <GithubIcon className='size-7' aria-label='Source code' />
       </a>

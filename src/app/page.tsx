@@ -47,7 +47,7 @@ export default function Home() {
         sort_by: generatedQ.sort_by || 'popularity:desc',
       };
 
-      const searchResponse = await typesense
+      const searchResponse = await typesense()
         .collections<_CarSchemaResponse>('cars')
         .documents()
         .search({

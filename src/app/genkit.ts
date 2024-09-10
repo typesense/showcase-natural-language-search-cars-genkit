@@ -20,10 +20,12 @@ configureGenkit({
 
 // dynamically provide facet values for the llm
 async function getFieldEnumValues() {
-  const collection = await typesense.collections('cars').retrieve();
+  const collection = await typesense({ isServer: true })
+    .collections('cars')
+    .retrieve();
   const facetableFields = collection.fields?.filter((field) => field.facet);
 
-  const facetValues = await typesense
+  const facetValues = await typesense()
     .collections<_CarSchemaResponse>('cars')
     .documents()
     .search({

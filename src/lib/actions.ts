@@ -5,7 +5,7 @@ export type _carsData = Awaited<ReturnType<ReturnType<typeof fetchCars>>>;
 
 export default function fetchCars(searchParams: _TypesenseQuery) {
   return async ({ pageParam }: { pageParam: number }) => {
-    const res = await typesense
+    const res = await typesense()
       .collections<_CarSchemaResponse>('cars')
       .documents()
       .search({
