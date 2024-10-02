@@ -50,6 +50,12 @@ Index data into typesense
 npm run index:typesense
 ```
 
+Update collection metadata, this will be used to provide additional information about each collection property for the LLM.
+
+```shell
+npm run updateMetadata:typesense
+```
+
 Start the dev server
 
 ```shell
