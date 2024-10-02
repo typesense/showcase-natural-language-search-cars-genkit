@@ -2,7 +2,7 @@
   "main": "lib/index.js",
   "scripts": {
     "start": "next start",
-    "build": "next build",
+    "build": "npm run updateMetadata:typesense && next build",
     "build:watch": "tsc --watch",
     "dev": "next dev",
     "lint": "next lint",
