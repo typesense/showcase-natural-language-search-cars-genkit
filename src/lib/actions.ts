@@ -1,12 +1,13 @@
 import { _CarSchemaResponse, _TypesenseQuery } from '@/schemas/typesense';
 import { typesense } from './typesense';
+import { clientEnv } from '@/utils/env';
 
 export type _carsData = Awaited<ReturnType<ReturnType<typeof fetchCars>>>;
 
 export default function fetchCars(searchParams: _TypesenseQuery) {
   return async ({ pageParam }: { pageParam: number }) => {
     const res = await typesense()
-      .collections<_CarSchemaResponse>('cars')
+      .collections<_CarSchemaResponse>(clientEnv.TYPESENSE_COLLECTION_NAME)
       .documents()
       .search({
         ...searchParams,

@@ -30,3 +30,7 @@ export const TypesenseQuerySchema = z
 
 export type _CarSchemaResponse = z.infer<typeof CarSchema>;
 export type _TypesenseQuery = z.infer<typeof TypesenseQuerySchema>;
+
+export type TypesenseFieldDescriptionSchema = {
+  [fieldName: string]: string;
+};

@@ -5,8 +5,16 @@ import { configureGenkit, defineSchema } from '@genkit-ai/core';
 import { defineFlow, runFlow } from '@genkit-ai/flow';
 import { googleAI } from '@genkit-ai/googleai';
 import { dotprompt, defineDotprompt } from '@genkit-ai/dotprompt';
-import { _CarSchemaResponse, TypesenseQuerySchema } from '@/schemas/typesense';
+import {
+  _CarSchemaResponse,
+  TypesenseFieldDescriptionSchema,
+  TypesenseQuerySchema,
+} from '@/schemas/typesense';
 import { typesense } from '@/lib/typesense';
+import { clientEnv } from '@/utils/env';
+import { CollectionFieldSchema } from 'typesense/lib/Typesense/Collection';
+import { booleanToYesNo } from '@/utils/utils';
+import { unstable_cache } from 'next/cache';
 
 const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
 
@@ -18,15 +26,30 @@ configureGenkit({
   enableTracingAndMetrics: true,
 });
 
-// dynamically provide facet values for the llm
-async function getFieldEnumValues() {
+// Dynamically provide collection data properties & facet values for the llm
+// Collection field `sort` property has to be explicitly set to true/false for the llm to enable/disable sorting
+// Provide additional field description using collection metadata
+async function getCollectionProperties() {
   const collection = await typesense({ isServer: true })
-    .collections('cars')
+    .collections(clientEnv.TYPESENSE_COLLECTION_NAME)
     .retrieve();
-  const facetableFields = collection.fields?.filter((field) => field.facet);
+  const facetableFields: CollectionFieldSchema[] = [];
+  const rows: string[] = [];
+
+  collection.fields?.forEach((field) => {
+    if (field.facet) {
+      facetableFields.push(field);
+    } else {
+      const { name, type, sort } = field;
+      rows.push(
+        // prettier-ignore
+        `| ${name} | ${type} | Yes | ${booleanToYesNo(sort)} | N/A | ${(collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ''} |`
+      );
+    }
+  });
 
   const facetValues = await typesense()
-    .collections<_CarSchemaResponse>('cars')
+    .collections<_CarSchemaResponse>(clientEnv.TYPESENSE_COLLECTION_NAME)
     .documents()
     .search({
       q: '*',
@@ -34,19 +57,30 @@ async function getFieldEnumValues() {
       max_facet_values: MAX_FACET_VALUES + 1, // plus 1 so we can check if any fields exceed the limit
     });
 
-  return facetableFields
-    ?.map(({ type, name }, i) => {
-      const counts = facetValues.facet_counts?.[i].counts;
-      const exceedMaxNumValues =
-        counts && counts?.length > MAX_FACET_VALUES
-          ? 'There are more enum values for this field'
-          : 'N/A';
-      const enums = counts?.map((item) => item.value).join(', ');
-      // prettier-ignore
-      return `| ${name} | ${type} | Yes | No | ${enums} | ${exceedMaxNumValues} |`
-    })
-    .join('\n');
+  const facetableRows = facetableFields?.map(({ type, name, sort }, i) => {
+    const counts = facetValues.facet_counts?.[i].counts;
+    const exceedMaxNumValues =
+      counts && counts?.length > MAX_FACET_VALUES
+        ? 'There are more enum values for this field'
+        : 'N/A';
+    const enums = counts?.map((item) => item.value).join(', ');
+    // prettier-ignore
+    return `| ${name} | ${type} | Yes | ${booleanToYesNo(sort)} | ${enums} | ${
+      (collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ''
+    } ${exceedMaxNumValues} |`;
+  });
+  return rows.concat(facetableRows).join('\n');
 }
+
+const getCachedCollectionProperties = unstable_cache(
+  async () => await getCollectionProperties(),
+  [],
+  {
+    tags: ['getCollectionProperties'],
+    revalidate: false, // Since the Typesense data for this repo is from a static dataset, we will cache the response indefinitely.
+    // Because of that, changes made to the collection (e.g. updating field metadata) won't get reflected. When developing, use `getCollectionProperties` instead.
+  }
+);
 
 const generateTypesenseQuery = defineFlow(
   {
@@ -65,6 +99,13 @@ const generateTypesenseQuery = defineFlow(
         },
         output: {
           schema: TypesenseQuerySchema,
+        },
+        name: 'typesense-prompt',
+        config: {
+          // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
+          temperature: 0,
+          // topK: 1,
+          // topP: 1,
         },
       },
       // prettier-ignore
@@ -90,6 +131,11 @@ Multiple Conditions: Separate conditions with &&. Examples:
 OR Conditions Across Fields: Use || only for different fields. Examples:
  - vehicle_size:Large || vehicle_style:Wagon
  - (vehicle_size:Large || vehicle_style:Wagon) && year:>2010
+
+If the same field is used for filtering multiple values in an || (OR) operation, then use the multi-value OR syntax. For eg:
+\`make:BMW || make:Honda || make:Ford\`
+should be simplified as:
+\`make:[BMW, Honda, Ford]\`
 
 Negation: Use :!= to exclude values. Examples:
  - make:!=Nissan
@@ -117,15 +163,7 @@ Sorting hints:
 
 | Name             | Data Type | Filter | Sort | Enum Values  | Description|
 |------------------|-----------|--------|------|--------------|------------|
-| year             | int64     | Yes    | Yes  | N/A          | N/A        |
-| engine_hp        | float64   | Yes    | Yes  | N/A          | N/A        |
-| engine_cylinders | int64     | Yes    | Yes  | N/A          | N/A        |
-| number_of_doors  | int64     | Yes    | No   | N/A          | N/A        |
-| highway_mpg      | int64     | Yes    | Yes  | N/A          | N/A        |
-| city_mpg         | int64     | Yes    | Yes  | N/A          | N/A        |
-| popularity       | int64     | Yes    | Yes  | N/A          | N/A        |
-| msrp             | int64     | Yes    | Yes  | N/A          | in USD $   |
-${await getFieldEnumValues()}
+${await getCachedCollectionProperties()}
 
 ### Query (for the query property) ###
 Include query only if both filter_by and sort_by are inadequate.
@@ -136,8 +174,7 @@ Include query only if both filter_by and sort_by are inadequate.
 
 ### Output Instructions ###
 
-Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.
-`
+Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.`
     );
     const llmResponse = await typesensePrompt.generate({
       model: 'googleai/gemini-1.5-flash-latest',

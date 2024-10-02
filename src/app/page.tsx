@@ -14,6 +14,8 @@ import { useToast } from '@/components/ui/use-toast';
 import { ToastAction } from '@/components/ui/toast';
 import { TYPESENSE_PER_PAGE } from '@/utils/utils';
 import Header from '@/components/Header';
+import { clientEnv } from '@/utils/env';
+import React from 'react';
 
 export default function Home() {
   const { toast } = useToast();
@@ -48,7 +50,7 @@ export default function Home() {
       };
 
       const searchResponse = await typesense()
-        .collections<_CarSchemaResponse>('cars')
+        .collections<_CarSchemaResponse>(clientEnv.TYPESENSE_COLLECTION_NAME)
         .documents()
         .search({
           ...params,

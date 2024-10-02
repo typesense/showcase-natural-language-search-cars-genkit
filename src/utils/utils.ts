@@ -32,3 +32,7 @@ export const EXAMPLE_SEARCH_TERMS = [
 ];
 
 export const TYPESENSE_PER_PAGE = 12;
+
+export function booleanToYesNo(bool: boolean | null | undefined) {
+  return bool ? 'Yes' : 'No';
+}
