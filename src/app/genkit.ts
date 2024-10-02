@@ -103,7 +103,7 @@ const generateTypesenseQuery = defineFlow(
         name: 'typesense-prompt',
         config: {
           // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
-          temperature: 0,
+          // temperature: 0,
           // topK: 1,
           // topP: 1,
         },
