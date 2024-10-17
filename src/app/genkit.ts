@@ -1,10 +1,10 @@
 'use server';
 
 import * as z from 'zod';
-import { configureGenkit, defineSchema } from '@genkit-ai/core';
+import { configureGenkit } from '@genkit-ai/core';
 import { defineFlow, runFlow } from '@genkit-ai/flow';
 import { googleAI } from '@genkit-ai/googleai';
-import { dotprompt, defineDotprompt } from '@genkit-ai/dotprompt';
+import { defineDotprompt } from '@genkit-ai/dotprompt';
 import {
   _CarSchemaResponse,
   TypesenseFieldDescriptionSchema,
@@ -18,10 +18,8 @@ import { unstable_cache } from 'next/cache';
 
 const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
 
-defineSchema('TypesenseQuery', TypesenseQuerySchema);
-
 configureGenkit({
-  plugins: [dotprompt({ dir: 'src/prompts' }), googleAI()],
+  plugins: [googleAI()],
   logLevel: 'debug',
   enableTracingAndMetrics: true,
 });
@@ -113,7 +111,7 @@ const generateTypesenseQuery = defineFlow(
 
 ### Typesense Query Syntax ###
 
-## Filtering (for the filter_by property) ##
+## Filtering ##
 
 Matching values: The syntax is {fieldName} follow by a match operator : and a string value or an array of string values each separated by a comma. Do not encapsulate the value in double quote or single quote. Examples:
 - model:prius
@@ -132,14 +130,14 @@ OR Conditions Across Fields: Use || only for different fields. Examples:
  - vehicle_size:Large || vehicle_style:Wagon
  - (vehicle_size:Large || vehicle_style:Wagon) && year:>2010
 
-If the same field is used for filtering multiple values in an || (OR) operation, then use the multi-value OR syntax. For eg:
-\`make:BMW || make:Honda || make:Ford\`
-should be simplified as:
-\`make:[BMW, Honda, Ford]\`
-
 Negation: Use :!= to exclude values. Examples:
  - make:!=Nissan
  - make:!=[Nissan,BMW]
+
+ If the same field is used for filtering multiple values in an || (OR) operation, then use the multi-value OR syntax. For eg:
+\`make:BMW || make:Honda || make:Ford\`
+should be simplified as:
+\`make:[BMW, Honda, Ford]\`
 
 If any string values have parentheses, surround the value with backticks to escape them.
 
@@ -148,7 +146,7 @@ For eg, if a field has the value "premium unleaded (required)", and you need to 
 - fuel_type:\`premium unleaded (required)\`
 - fuel_type!:\`premium unleaded (required)\`
 
-## Sorting (for the sort_by property) ##
+## Sorting ##
 
 You can only sort maximum 3 sort fields at a time. The syntax is {fieldName}: follow by asc (ascending) or dsc (descending), if sort by multiple fields, separate them by a comma. Examples:
  - msrp:desc
@@ -161,11 +159,11 @@ Sorting hints:
 
 ## Car properties ##
 
-| Name             | Data Type | Filter | Sort | Enum Values  | Description|
-|------------------|-----------|--------|------|--------------|------------|
+| Name | Data Type | Filter | Sort | Enum Values  | Description|
+|------|-----------|--------|------|--------------|------------|
 ${await getCachedCollectionProperties()}
 
-### Query (for the query property) ###
+### Query ###
 Include query only if both filter_by and sort_by are inadequate.
 
 ### User-Supplied Query ###
@@ -185,8 +183,8 @@ Provide the valid JSON with the correct filter and sorting format, only include 
   }
 );
 
-export async function callGenerateTypesenseQuery(theme: string) {
-  const flowResponse = await runFlow(generateTypesenseQuery, theme);
+export async function callGenerateTypesenseQuery(query: string) {
+  const flowResponse = await runFlow(generateTypesenseQuery, query);
   console.log(flowResponse);
   return flowResponse;
 }

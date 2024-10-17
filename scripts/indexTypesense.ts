@@ -37,84 +37,28 @@ const PATH_TO_DATASET = './scripts/data/cars.jsonl';
   await typesense.collections().create({
     name: COLLECTION_NAME,
     fields: [
-      {
-        name: 'make',
-        type: 'string',
-        facet: true,
-      },
-      {
-        name: 'model',
-        type: 'string',
-        facet: true,
-      },
-      {
-        name: 'year',
-        type: 'int32',
-      },
-      {
-        name: 'engine_fuel_type',
-        type: 'string',
-        facet: true,
-      },
-      {
-        name: 'engine_hp',
-        type: 'float',
-      },
-      {
-        name: 'engine_cylinders',
-        type: 'int32',
-      },
-      {
-        name: 'transmission_type',
-        type: 'string',
-        facet: true,
-      },
-      {
-        name: 'driven_wheels',
-        type: 'string',
-        facet: true,
-      },
-      {
-        name: 'number_of_doors',
-        type: 'int32',
-      },
-      {
-        name: 'market_category',
-        type: 'string[]',
-        facet: true,
-      },
-      {
-        name: 'vehicle_size',
-        type: 'string',
-        facet: true,
-      },
-      {
-        name: 'vehicle_style',
-        type: 'string',
-        facet: true,
-      },
-      {
-        name: 'highway_mpg',
-        type: 'int32',
-      },
-      {
-        name: 'city_mpg',
-        type: 'int32',
-      },
-      {
-        name: 'popularity',
-        type: 'int32',
-      },
-      {
-        name: 'msrp',
-        type: 'int32',
-      },
+      { name: 'make', type: 'string', facet: true },
+      { name: 'model', type: 'string', facet: true },
+      { name: 'year', type: 'int32' },
+      { name: 'engine_fuel_type', type: 'string', facet: true },
+      { name: 'engine_hp', type: 'float' },
+      { name: 'engine_cylinders', type: 'int32' },
+      { name: 'transmission_type', type: 'string', facet: true },
+      { name: 'driven_wheels', type: 'string', facet: true },
+      { name: 'number_of_doors', type: 'int32' },
+      { name: 'market_category', type: 'string[]', facet: true },
+      { name: 'vehicle_size', type: 'string', facet: true },
+      { name: 'vehicle_style', type: 'string', facet: true },
+      { name: 'highway_mpg', type: 'int32' },
+      { name: 'city_mpg', type: 'int32' },
+      { name: 'popularity', type: 'int32' },
+      { name: 'msrp', type: 'int32' },
     ],
   });
 
   console.log('Indexing data');
 
-  const jsonlPodcasts = await fs.readFile(
+  const dataset = await fs.readFile(
     resolve(resolve(), PATH_TO_DATASET),
     'utf-8'
   );
@@ -123,7 +67,7 @@ const PATH_TO_DATASET = './scripts/data/cars.jsonl';
     const returnData = await typesense
       .collections(COLLECTION_NAME)
       .documents()
-      .import(jsonlPodcasts);
+      .import(dataset);
 
     console.log('Return data: ', returnData);
   } catch (error) {
