@@ -1,5 +1,5 @@
 <h1>
- 🔥 Natural Language Search experience powered by Genkit and Typesense
+ 🔥 Natural Language Search powered by Genkit and Typesense
 </h1>
 
 Search for the perfect car by describing it in natural language. We use a technique called "Generation Augmented Retrieval" to convert the natural language query into a Typesense query. 
