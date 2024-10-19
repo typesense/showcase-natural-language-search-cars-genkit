@@ -5,7 +5,7 @@ import ExampleSearchTerms from '@/components/ExampleSearchTerms';
 import Heading from '@/components/Heading';
 import { typesense } from '@/lib/typesense';
 import { _CarSchemaResponse, _TypesenseQuery } from '@/schemas/typesense';
-import { useEffect, useState } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import { SearchResponse } from 'typesense/lib/Typesense/Documents';
 import { useSearchParams, useRouter } from 'next/navigation';
 import Form from '@/components/Form';
@@ -18,6 +18,18 @@ import { clientEnv } from '@/utils/env';
 import React from 'react';
 
 export default function Home() {
+  return (
+    <main className='flex flex-col items-center px-2 py-10 max-w-screen-lg m-auto font-medium'>
+      <Header />
+      <Heading />
+      <Suspense fallback={<LoaderSVG />}>
+        <Search />
+      </Suspense>
+    </main>
+  );
+}
+
+function Search() {
   const { toast } = useToast();
   const searchParams = useSearchParams();
   const q = searchParams.get('q') || '';
@@ -132,11 +144,9 @@ export default function Home() {
   };
 
   return (
-    <main className='flex flex-col items-center px-2 py-10 max-w-screen-lg m-auto font-medium'>
-      <Header />
-      <Heading />
+    <>
       <Form q={q} />
       {render()}
-    </main>
+    </>
   );
 }
