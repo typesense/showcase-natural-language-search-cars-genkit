@@ -21,7 +21,6 @@ const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
 configureGenkit({
   plugins: [googleAI()],
   logLevel: 'debug',
-  enableTracingAndMetrics: true,
 });
 
 // Dynamically provide collection data properties & facet values for the llm
