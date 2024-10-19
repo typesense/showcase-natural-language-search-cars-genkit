@@ -1,13 +1,14 @@
 <h1>
- 🔥 Generation Augmented Retrieval (GAR) search experience powered by Genkit and Typesense
+ 🔥 Natural Language Search experience powered by Genkit and Typesense
 </h1>
 
-Search for your dream car with the help of AI.
+Search for the perfect car by describing it in natural language. We use a technique called "Generation Augmented Retrieval" to convert the natural language query into a Typesense query. 
 
 ## Tech Stack
 
 - <a href="https://github.com/typesense/typesense" target="_blank">Typesense</a>
-- <a href="https://github.com/firebase/genkit" target="_blank">Genkit</a>
+- <a href="https://github.com/firebase/genkit" target="_blank">Firebase Genkit</a>
+- <a href="https://deepmind.google/technologies/gemini/" target="_blank">Google Gemini</a>
 - NextJS
 - Typescript
 - Tailwind
