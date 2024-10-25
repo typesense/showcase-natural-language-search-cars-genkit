@@ -40,7 +40,7 @@ async function getCollectionProperties() {
       const { name, type, sort } = field;
       rows.push(
         // prettier-ignore
-        `| ${name} | ${type} | Yes | ${booleanToYesNo(sort)} | N/A | ${(collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ''} |`
+        `|${name}|${type}|Yes|${booleanToYesNo(sort)}||${(collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ''}|`
       );
     }
   });
@@ -59,12 +59,12 @@ async function getCollectionProperties() {
     const exceedMaxNumValues =
       counts && counts?.length > MAX_FACET_VALUES
         ? 'There are more enum values for this field'
-        : 'N/A';
+        : '';
     const enums = counts?.map((item) => item.value).join(', ');
     // prettier-ignore
-    return `| ${name} | ${type} | Yes | ${booleanToYesNo(sort)} | ${enums} | ${
-      (collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ''
-    } ${exceedMaxNumValues} |`;
+    return `|${name}|${type}|Yes|${booleanToYesNo(sort)}|${enums}|${
+      (collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ' '
+    }${exceedMaxNumValues}|`;
   });
   return rows.concat(facetableRows).join('\n');
 }
@@ -158,8 +158,8 @@ Sorting hints:
 
 ## Car properties ##
 
-| Name | Data Type | Filter | Sort | Enum Values  | Description|
-|------|-----------|--------|------|--------------|------------|
+| Name | Data Type | Filter | Sort | Enum Values | Description |
+|------|-----------|--------|------|-------------|-------------|
 ${await getCachedCollectionProperties()}
 
 ### Query ###
