@@ -1,10 +1,7 @@
 'use server';
 
-import * as z from 'zod';
-import { configureGenkit } from '@genkit-ai/core';
-import { defineFlow, runFlow } from '@genkit-ai/flow';
-import { googleAI } from '@genkit-ai/googleai';
-import { defineDotprompt } from '@genkit-ai/dotprompt';
+import { genkit, z } from 'genkit';
+import { gemini15Flash, googleAI } from '@genkit-ai/googleai';
 import {
   _CarSchemaResponse,
   TypesenseFieldDescriptionSchema,
@@ -15,14 +12,16 @@ import { clientEnv } from '@/utils/env';
 import { CollectionFieldSchema } from 'typesense/lib/Typesense/Collection';
 import { booleanToYesNo } from '@/utils/utils';
 import { unstable_cache } from 'next/cache';
+import { logger } from 'genkit/logging';
+
+logger.setLogLevel('debug');
 
 const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
 
-configureGenkit({
+const ai = genkit({
   plugins: [googleAI()],
-  logLevel: 'debug',
+  model: gemini15Flash,
 });
-
 // Dynamically provide collection data properties & facet values for the llm
 // Collection field `sort` property has to be explicitly set to true/false for the llm to enable/disable sorting
 // Provide additional field description using collection metadata
@@ -79,33 +78,22 @@ const getCachedCollectionProperties = unstable_cache(
   }
 );
 
-const generateTypesenseQuery = defineFlow(
+const generateTypesenseQuery = ai.defineFlow(
   {
     name: 'generateTypesenseQuery',
     inputSchema: z.string(),
     outputSchema: TypesenseQuerySchema,
   },
   async (query) => {
-    const typesensePrompt = defineDotprompt(
-      {
-        model: 'googleai/gemini-1.5-flash',
-        input: {
-          schema: z.object({
-            query: z.string(),
-          }),
-        },
-        output: {
-          schema: TypesenseQuerySchema,
-        },
-        name: 'typesense-prompt',
-        config: {
-          // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
-          // temperature: 0,
-          // topK: 1,
-          // topP: 1,
-        },
+    const { output } = await ai.generate({
+      model: gemini15Flash,
+      config: {
+        // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
+        // temperature: 0,
+        // topK: 1,
+        // topP: 1,
       },
-      // prettier-ignore
+      system:      // prettier-ignore
       `You are assisting a user in searching for cars. Convert their query into the appropriate Typesense query format based on the instructions below.
 
 ### Typesense Query Syntax ###
@@ -156,34 +144,34 @@ Sorting hints:
   - When a user says something like "powerful", sort by engine_hp.
   - When a user says something like "latest", sort by year.
 
-## Car properties ##
+### Query ###
+Include query only if both filter_by and sort_by are inadequate.
 
+## Car properties ##
 | Name | Data Type | Filter | Sort | Enum Values | Description |
 |------|-----------|--------|------|-------------|-------------|
 ${await getCachedCollectionProperties()}
 
-### Query ###
-Include query only if both filter_by and sort_by are inadequate.
-
-### User-Supplied Query ###
-
-{{query}}
-
 ### Output Instructions ###
-
-Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.`
-    );
-    const llmResponse = await typesensePrompt.generate({
-      model: 'googleai/gemini-1.5-flash-latest',
-      input: { query },
+Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.`,
+      prompt:
+        //prettier-ignore
+        `
+### User-Supplied Query ###
+${query}`,
+      output: { schema: TypesenseQuerySchema },
     });
 
-    return llmResponse.output();
+    if (output == null) {
+      throw new Error("Response doesn't satisfy schema.");
+    }
+
+    return output;
   }
 );
 
 export async function callGenerateTypesenseQuery(query: string) {
-  const flowResponse = await runFlow(generateTypesenseQuery, query);
+  const flowResponse = await generateTypesenseQuery(query);
   console.log(flowResponse);
   return flowResponse;
 }

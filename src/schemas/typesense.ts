@@ -1,4 +1,4 @@
-import * as z from 'zod';
+import { z } from 'genkit';
 
 export const CarSchema = z.object({
   id: z.string(),
