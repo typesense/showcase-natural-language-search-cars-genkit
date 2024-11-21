@@ -16,7 +16,7 @@ import { TYPESENSE_PER_PAGE } from '@/utils/utils';
 import Header from '@/components/Header';
 import { clientEnv } from '@/utils/env';
 import React from 'react';
-
+import { RequestMalformed } from 'typesense/lib/Typesense/Errors';
 export default function Home() {
   return (
     <main className='flex flex-col items-center px-2 py-10 max-w-screen-lg m-auto font-medium'>
@@ -51,14 +51,19 @@ function Search() {
   async function getCars(q: string) {
     setLoadingState('generating');
     toast({}).dismiss();
+
+    const { data, error } = await callGenerateTypesenseQuery(q);
+    if (data == null) {
+      return errorToast(error.message);
+    }
+
     try {
-      const generatedQ = await callGenerateTypesenseQuery(q);
       setLoadingState('searching');
 
       const params = {
-        q: generatedQ.query || '*',
-        filter_by: generatedQ.filter_by || '',
-        sort_by: generatedQ.sort_by || 'popularity:desc',
+        q: data.query || '*',
+        filter_by: data.filter_by || '',
+        sort_by: data.sort_by || 'popularity:desc',
       };
 
       const searchResponse = await typesense()
@@ -71,27 +76,34 @@ function Search() {
         });
 
       setData({
-        generatedQueryString: JSON.stringify(generatedQ),
+        generatedQueryString: JSON.stringify(data),
         params,
         searchResponse,
       });
     } catch (error) {
+      let errorMsg = '';
       console.log(error);
-      toast({
-        variant: 'destructive',
-        title: 'Error processing your request!',
-        description: 'Please try again with a different query.',
-        duration: 5000,
-        action: (
-          <ToastAction onClick={() => getCars(q)} altText='Try again'>
-            Try again
-          </ToastAction>
-        ),
-      });
+      if (error instanceof RequestMalformed) {
+        errorMsg = 'Invalid generated Typesense query.';
+      }
+      errorToast(errorMsg || 'Please try again with a different query.');
     } finally {
       setLoadingState('finished');
     }
   }
+
+  const errorToast = (msg: string) =>
+    toast({
+      variant: 'destructive',
+      title: `Error processing your request!`,
+      description: msg,
+      duration: 5000,
+      action: (
+        <ToastAction onClick={() => getCars(q)} altText='Try again'>
+          Try again
+        </ToastAction>
+      ),
+    });
 
   useEffect(() => {
     setData(undefined);

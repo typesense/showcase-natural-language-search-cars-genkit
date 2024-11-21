@@ -1,6 +1,6 @@
 'use server';
 
-import { genkit, z } from 'genkit';
+import { genkit, GenkitError, z } from 'genkit';
 import { gemini15Flash, googleAI } from '@genkit-ai/googleai';
 import {
   _CarSchemaResponse,
@@ -85,15 +85,16 @@ const generateTypesenseQuery = ai.defineFlow(
     outputSchema: TypesenseQuerySchema,
   },
   async (query) => {
-    const { output } = await ai.generate({
-      model: gemini15Flash,
-      config: {
-        // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
-        // temperature: 0,
-        // topK: 1,
-        // topP: 1,
-      },
-      system:      // prettier-ignore
+    try {
+      const { output } = await ai.generate({
+        model: gemini15Flash,
+        config: {
+          // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
+          // temperature: 0,
+          // topK: 1,
+          // topP: 1,
+        },
+        system:      // prettier-ignore
       `You are assisting a user in searching for cars. Convert their query into the appropriate Typesense query format based on the instructions below.
 
 ### Typesense Query Syntax ###
@@ -127,9 +128,7 @@ should be simplified as:
 \`make:[BMW, Honda, Ford]\`
 
 If any string values have parentheses, surround the value with backticks to escape them.
-
 For eg, if a field has the value "premium unleaded (required)", and you need to use it in a filter_by expression, then you would use it like this:
-
 - fuel_type:\`premium unleaded (required)\`
 - fuel_type!:\`premium unleaded (required)\`
 
@@ -154,24 +153,37 @@ ${await getCachedCollectionProperties()}
 
 ### Output Instructions ###
 Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.`,
-      prompt:
-        //prettier-ignore
-        `
-### User-Supplied Query ###
+        prompt://prettier-ignore
+`### User-Supplied Query ###
 ${query}`,
-      output: { schema: TypesenseQuerySchema },
-    });
+        output: { schema: TypesenseQuerySchema },
+      });
 
-    if (output == null) {
-      throw new Error("Response doesn't satisfy schema.");
+      if (output !== null) return output;
+    } catch (error) {
+      console.log(error);
+      throw new CustomGenkitGenerationError((error as GenkitError).message);
     }
-
-    return output;
+    throw new CustomGenkitGenerationError("Response doesn't satisfy schema.");
   }
 );
 
 export async function callGenerateTypesenseQuery(query: string) {
-  const flowResponse = await generateTypesenseQuery(query);
-  console.log(flowResponse);
-  return flowResponse;
+  try {
+    const flowResponse = await generateTypesenseQuery(query);
+    console.log(flowResponse);
+    return { data: flowResponse, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: { message: (error as CustomGenkitGenerationError).message },
+    };
+  }
+}
+
+class CustomGenkitGenerationError extends Error {
+  constructor(message = '') {
+    super(message);
+    this.message = message;
+  }
 }
