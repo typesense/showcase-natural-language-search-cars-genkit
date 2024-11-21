@@ -54,7 +54,8 @@ function Search() {
 
     const { data, error } = await callGenerateTypesenseQuery(q);
     if (data == null) {
-      return errorToast(error.message);
+      errorToast(error.message);
+      return;
     }
 
     try {
