@@ -162,7 +162,9 @@ ${query}`,
       if (output !== null) return output;
     } catch (error) {
       console.log(error);
-      throw new CustomGenkitGenerationError((error as GenkitError).message);
+      throw new CustomGenkitGenerationError(
+        (error as GenkitError).message || 'Error generating Typesense query!'
+      );
     }
     throw new CustomGenkitGenerationError("Response doesn't satisfy schema.");
   }
