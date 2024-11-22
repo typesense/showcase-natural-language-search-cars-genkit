@@ -39,8 +39,8 @@ function Search() {
     'generating' | 'searching' | 'finished'
   >('finished');
 
+  const [queryJsonString, setQueryJsonString] = useState('');
   const [data, setData] = useState<{
-    generatedQueryString: string;
     params: _TypesenseQuery;
     searchResponse: SearchResponse<_CarSchemaResponse>;
   }>();
@@ -52,19 +52,20 @@ function Search() {
     setLoadingState('generating');
     toast({}).dismiss();
 
-    const { data, error } = await callGenerateTypesenseQuery(q);
-    if (data == null) {
+    const { data: generatedQuery, error } = await callGenerateTypesenseQuery(q);
+    if (generatedQuery == null) {
       errorToast(error.message);
       return;
     }
+    setQueryJsonString(JSON.stringify(generatedQuery));
 
     try {
       setLoadingState('searching');
 
       const params = {
-        q: data.query || '*',
-        filter_by: data.filter_by || '',
-        sort_by: data.sort_by || 'popularity:desc',
+        q: generatedQuery.query || '*',
+        filter_by: generatedQuery.filter_by || '',
+        sort_by: generatedQuery.sort_by || '',
       };
 
       const searchResponse = await typesense()
@@ -77,7 +78,6 @@ function Search() {
         });
 
       setData({
-        generatedQueryString: JSON.stringify(data),
         params,
         searchResponse,
       });
@@ -108,6 +108,7 @@ function Search() {
 
   useEffect(() => {
     setData(undefined);
+    setQueryJsonString('');
     q && getCars(q);
   }, [q]);
 
@@ -122,30 +123,23 @@ function Search() {
       );
 
     if (data)
-      return (
+      return found == 0 ? (
+        <div className='mt-20 text-light'>
+          Oops! Couldn't find what you are looking for.
+        </div>
+      ) : (
         <>
-          <pre className='text-xs mb-4 block max-w-full overflow-auto'>
-            {data.generatedQueryString}
-          </pre>
-          {found == 0 ? (
-            <div className='mt-20 text-light'>
-              Oops! Couldn't find what you are looking for.
-            </div>
-          ) : (
-            <>
-              <div className='self-start mb-2'>
-                Found {found} {found > 1 ? 'results' : 'result'}.
-              </div>
-              <CarList
-                initialData={{
-                  data: data.searchResponse.hits,
-                  nextPage,
-                }}
-                queryKey={data.generatedQueryString}
-                searchParams={data.params}
-              />
-            </>
-          )}
+          <div className='self-start mb-2'>
+            Found {found} {found > 1 ? 'results' : 'result'}.
+          </div>
+          <CarList
+            initialData={{
+              data: data.searchResponse.hits,
+              nextPage,
+            }}
+            queryKey={queryJsonString}
+            searchParams={data.params}
+          />
         </>
       );
 
@@ -159,6 +153,11 @@ function Search() {
   return (
     <>
       <Form q={q} />
+      {
+        <pre className='text-xs mb-4 block max-w-full overflow-auto'>
+          {queryJsonString}
+        </pre>
+      }
       {render()}
     </>
   );
