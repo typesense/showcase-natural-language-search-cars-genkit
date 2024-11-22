@@ -85,7 +85,7 @@ function Search() {
       let errorMsg = '';
       console.log(error);
       if (error instanceof RequestMalformed) {
-        errorMsg = 'Invalid generated Typesense query.';
+        errorMsg = error.message;
       }
       errorToast(errorMsg || 'Please try again with a different query.');
     } finally {

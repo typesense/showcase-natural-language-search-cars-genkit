@@ -59,7 +59,7 @@ async function getCollectionProperties() {
       counts && counts?.length > MAX_FACET_VALUES
         ? 'There are more enum values for this field'
         : '';
-    const enums = counts?.map((item) => item.value).join(', ');
+    const enums = counts?.map((item) => item.value).join('; ');
     // prettier-ignore
     return `|${name}|${type}|Yes|${booleanToYesNo(sort)}|${enums}|${
       (collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ' '
@@ -101,36 +101,35 @@ const generateTypesenseQuery = ai.defineFlow(
 
 ## Filtering ##
 
-Matching values: The syntax is {fieldName} follow by a match operator : and a string value or an array of string values each separated by a comma. Do not encapsulate the value in double quote or single quote. Examples:
+Matching values: {fieldName}: followed by a string value or an array of string values each separated by a comma. Enclose the string value with backticks if it contains parentheses. Examples:
 - model:prius
 - make:[BMW,Nissan] returns cars that are manufactured by BMW OR Nissan.
+- fuel_type:\`premium unleaded (required)\`
+
 
 Numeric Filters: Use :[min..max] for ranges, or comparison operators like :>, :<, :>=, :<=, :=. Examples:
- - year:[2000..2020]
- - highway_mpg:>40
- - msrp:=30000
+- year:[2000..2020]
+- highway_mpg:>40
+- msrp:=30000
 
 Multiple Conditions: Separate conditions with &&. Examples:
- - num_employees:>100 && country:[USA,UK]
- - categories:=Shoes && categories:=Outdoor
+- num_employees:>100 && country:[USA,UK]
+- categories:=Shoes && categories:=Outdoor
 
 OR Conditions Across Fields: Use || only for different fields. Examples:
- - vehicle_size:Large || vehicle_style:Wagon
- - (vehicle_size:Large || vehicle_style:Wagon) && year:>2010
+- vehicle_size:Large || vehicle_style:Wagon
+- (vehicle_size:Large || vehicle_style:Wagon) && year:>2010
 
 Negation: Use :!= to exclude values. Examples:
- - make:!=Nissan
- - make:!=[Nissan,BMW]
+- make:!=Nissan
+- make:!=[Nissan,BMW]
+- fuel_type:!=\`premium unleaded (required)\`
+
 
  If the same field is used for filtering multiple values in an || (OR) operation, then use the multi-value OR syntax. For eg:
 \`make:BMW || make:Honda || make:Ford\`
 should be simplified as:
 \`make:[BMW, Honda, Ford]\`
-
-If any string values have parentheses, surround the value with backticks to escape them.
-For eg, if a field has the value "premium unleaded (required)", and you need to use it in a filter_by expression, then you would use it like this:
-- fuel_type:\`premium unleaded (required)\`
-- fuel_type!:\`premium unleaded (required)\`
 
 ## Sorting ##
 
@@ -143,13 +142,13 @@ Sorting hints:
   - When a user says something like "powerful", sort by engine_hp.
   - When a user says something like "latest", sort by year.
 
-### Query ###
-Include query only if both filter_by and sort_by are inadequate.
-
 ## Car properties ##
 | Name | Data Type | Filter | Sort | Enum Values | Description |
 |------|-----------|--------|------|-------------|-------------|
 ${await getCachedCollectionProperties()}
+
+### Query ###
+Include query only if both filter_by and sort_by are inadequate.
 
 ### Output Instructions ###
 Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.`,
