@@ -16,7 +16,7 @@ import { TYPESENSE_PER_PAGE } from '@/utils/utils';
 import Header from '@/components/Header';
 import { clientEnv } from '@/utils/env';
 import React from 'react';
-
+import { RequestMalformed } from 'typesense/lib/Typesense/Errors';
 export default function Home() {
   return (
     <main className='flex flex-col items-center px-2 py-10 max-w-screen-lg m-auto font-medium'>
@@ -39,8 +39,8 @@ function Search() {
     'generating' | 'searching' | 'finished'
   >('finished');
 
+  const [queryJsonString, setQueryJsonString] = useState('');
   const [data, setData] = useState<{
-    generatedQueryString: string;
     params: _TypesenseQuery;
     searchResponse: SearchResponse<_CarSchemaResponse>;
   }>();
@@ -51,14 +51,21 @@ function Search() {
   async function getCars(q: string) {
     setLoadingState('generating');
     toast({}).dismiss();
+
+    const { data: generatedQuery, error } = await callGenerateTypesenseQuery(q);
+    if (generatedQuery == null) {
+      errorToast(error.message);
+      return;
+    }
+    setQueryJsonString(JSON.stringify(generatedQuery));
+
     try {
-      const generatedQ = await callGenerateTypesenseQuery(q);
       setLoadingState('searching');
 
       const params = {
-        q: generatedQ.query || '*',
-        filter_by: generatedQ.filter_by || '',
-        sort_by: generatedQ.sort_by || 'popularity:desc',
+        q: generatedQuery.query || '*',
+        filter_by: generatedQuery.filter_by || '',
+        sort_by: generatedQuery.sort_by || '',
       };
 
       const searchResponse = await typesense()
@@ -71,30 +78,37 @@ function Search() {
         });
 
       setData({
-        generatedQueryString: JSON.stringify(generatedQ),
         params,
         searchResponse,
       });
     } catch (error) {
+      let errorMsg = '';
       console.log(error);
-      toast({
-        variant: 'destructive',
-        title: 'Error processing your request!',
-        description: 'Please try again with a different query.',
-        duration: 5000,
-        action: (
-          <ToastAction onClick={() => getCars(q)} altText='Try again'>
-            Try again
-          </ToastAction>
-        ),
-      });
+      if (error instanceof RequestMalformed) {
+        errorMsg = error.message;
+      }
+      errorToast(errorMsg || 'Please try again with a different query.');
     } finally {
       setLoadingState('finished');
     }
   }
 
+  const errorToast = (msg: string) =>
+    toast({
+      variant: 'destructive',
+      title: `Error processing your request!`,
+      description: msg,
+      duration: 5000,
+      action: (
+        <ToastAction onClick={() => getCars(q)} altText='Try again'>
+          Try again
+        </ToastAction>
+      ),
+    });
+
   useEffect(() => {
     setData(undefined);
+    setQueryJsonString('');
     q && getCars(q);
   }, [q]);
 
@@ -109,30 +123,23 @@ function Search() {
       );
 
     if (data)
-      return (
+      return found == 0 ? (
+        <div className='mt-20 text-light'>
+          Oops! Couldn't find what you are looking for.
+        </div>
+      ) : (
         <>
-          <pre className='text-xs mb-4 block max-w-full overflow-auto'>
-            {data.generatedQueryString}
-          </pre>
-          {found == 0 ? (
-            <div className='mt-20 text-light'>
-              Oops! Couldn't find what you are looking for.
-            </div>
-          ) : (
-            <>
-              <div className='self-start mb-2'>
-                Found {found} {found > 1 ? 'results' : 'result'}.
-              </div>
-              <CarList
-                initialData={{
-                  data: data.searchResponse.hits,
-                  nextPage,
-                }}
-                queryKey={data.generatedQueryString}
-                searchParams={data.params}
-              />
-            </>
-          )}
+          <div className='self-start mb-2'>
+            Found {found} {found > 1 ? 'results' : 'result'}.
+          </div>
+          <CarList
+            initialData={{
+              data: data.searchResponse.hits,
+              nextPage,
+            }}
+            queryKey={queryJsonString}
+            searchParams={data.params}
+          />
         </>
       );
 
@@ -146,6 +153,11 @@ function Search() {
   return (
     <>
       <Form q={q} />
+      {
+        <pre className='text-xs mb-4 block max-w-full overflow-auto'>
+          {queryJsonString}
+        </pre>
+      }
       {render()}
     </>
   );

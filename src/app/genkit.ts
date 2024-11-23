@@ -1,10 +1,7 @@
 'use server';
 
-import * as z from 'zod';
-import { configureGenkit } from '@genkit-ai/core';
-import { defineFlow, runFlow } from '@genkit-ai/flow';
-import { googleAI } from '@genkit-ai/googleai';
-import { defineDotprompt } from '@genkit-ai/dotprompt';
+import { genkit, GenkitError, z } from 'genkit';
+import { gemini15Flash, googleAI } from '@genkit-ai/googleai';
 import {
   _CarSchemaResponse,
   TypesenseFieldDescriptionSchema,
@@ -15,14 +12,16 @@ import { clientEnv } from '@/utils/env';
 import { CollectionFieldSchema } from 'typesense/lib/Typesense/Collection';
 import { booleanToYesNo } from '@/utils/utils';
 import { unstable_cache } from 'next/cache';
+import { logger } from 'genkit/logging';
+
+logger.setLogLevel('debug');
 
 const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
 
-configureGenkit({
+const ai = genkit({
   plugins: [googleAI()],
-  logLevel: 'debug',
+  model: gemini15Flash,
 });
-
 // Dynamically provide collection data properties & facet values for the llm
 // Collection field `sort` property has to be explicitly set to true/false for the llm to enable/disable sorting
 // Provide additional field description using collection metadata
@@ -60,7 +59,7 @@ async function getCollectionProperties() {
       counts && counts?.length > MAX_FACET_VALUES
         ? 'There are more enum values for this field'
         : '';
-    const enums = counts?.map((item) => item.value).join(', ');
+    const enums = counts?.map((item) => item.value).join('; ');
     // prettier-ignore
     return `|${name}|${type}|Yes|${booleanToYesNo(sort)}|${enums}|${
       (collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ' '
@@ -79,71 +78,58 @@ const getCachedCollectionProperties = unstable_cache(
   }
 );
 
-const generateTypesenseQuery = defineFlow(
+const generateTypesenseQuery = ai.defineFlow(
   {
     name: 'generateTypesenseQuery',
     inputSchema: z.string(),
     outputSchema: TypesenseQuerySchema,
   },
   async (query) => {
-    const typesensePrompt = defineDotprompt(
-      {
-        model: 'googleai/gemini-1.5-flash',
-        input: {
-          schema: z.object({
-            query: z.string(),
-          }),
-        },
-        output: {
-          schema: TypesenseQuerySchema,
-        },
-        name: 'typesense-prompt',
+    try {
+      const { output } = await ai.generate({
+        model: gemini15Flash,
         config: {
           // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
           // temperature: 0,
           // topK: 1,
           // topP: 1,
         },
-      },
-      // prettier-ignore
+        system:      // prettier-ignore
       `You are assisting a user in searching for cars. Convert their query into the appropriate Typesense query format based on the instructions below.
 
 ### Typesense Query Syntax ###
 
 ## Filtering ##
 
-Matching values: The syntax is {fieldName} follow by a match operator : and a string value or an array of string values each separated by a comma. Do not encapsulate the value in double quote or single quote. Examples:
+Matching values: {fieldName}: followed by a string value or an array of string values each separated by a comma. Enclose the string value with backticks if it contains parentheses. Examples:
 - model:prius
 - make:[BMW,Nissan] returns cars that are manufactured by BMW OR Nissan.
+- fuel_type:\`premium unleaded (required)\`
+
 
 Numeric Filters: Use :[min..max] for ranges, or comparison operators like :>, :<, :>=, :<=, :=. Examples:
- - year:[2000..2020]
- - highway_mpg:>40
- - msrp:=30000
+- year:[2000..2020]
+- highway_mpg:>40
+- msrp:=30000
 
 Multiple Conditions: Separate conditions with &&. Examples:
- - num_employees:>100 && country:[USA,UK]
- - categories:=Shoes && categories:=Outdoor
+- num_employees:>100 && country:[USA,UK]
+- categories:=Shoes && categories:=Outdoor
 
 OR Conditions Across Fields: Use || only for different fields. Examples:
- - vehicle_size:Large || vehicle_style:Wagon
- - (vehicle_size:Large || vehicle_style:Wagon) && year:>2010
+- vehicle_size:Large || vehicle_style:Wagon
+- (vehicle_size:Large || vehicle_style:Wagon) && year:>2010
 
 Negation: Use :!= to exclude values. Examples:
- - make:!=Nissan
- - make:!=[Nissan,BMW]
+- make:!=Nissan
+- make:!=[Nissan,BMW]
+- fuel_type:!=\`premium unleaded (required)\`
+
 
  If the same field is used for filtering multiple values in an || (OR) operation, then use the multi-value OR syntax. For eg:
 \`make:BMW || make:Honda || make:Ford\`
 should be simplified as:
 \`make:[BMW, Honda, Ford]\`
-
-If any string values have parentheses, surround the value with backticks to escape them.
-
-For eg, if a field has the value "premium unleaded (required)", and you need to use it in a filter_by expression, then you would use it like this:
-
-- fuel_type:\`premium unleaded (required)\`
-- fuel_type!:\`premium unleaded (required)\`
 
 ## Sorting ##
 
@@ -157,7 +143,6 @@ Sorting hints:
   - When a user says something like "latest", sort by year.
 
 ## Car properties ##
-
 | Name | Data Type | Filter | Sort | Enum Values | Description |
 |------|-----------|--------|------|-------------|-------------|
 ${await getCachedCollectionProperties()}
@@ -165,25 +150,41 @@ ${await getCachedCollectionProperties()}
 ### Query ###
 Include query only if both filter_by and sort_by are inadequate.
 
-### User-Supplied Query ###
-
-{{query}}
-
 ### Output Instructions ###
+Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.`,
+        prompt://prettier-ignore
+`### User-Supplied Query ###
+${query}`,
+        output: { schema: TypesenseQuerySchema },
+      });
 
-Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.`
-    );
-    const llmResponse = await typesensePrompt.generate({
-      model: 'googleai/gemini-1.5-flash-latest',
-      input: { query },
-    });
-
-    return llmResponse.output();
+      if (output !== null) return output;
+    } catch (error) {
+      console.log(error);
+      throw new CustomGenkitGenerationError(
+        (error as GenkitError).message || 'Error generating Typesense query!'
+      );
+    }
+    throw new CustomGenkitGenerationError("Response doesn't satisfy schema.");
   }
 );
 
 export async function callGenerateTypesenseQuery(query: string) {
-  const flowResponse = await runFlow(generateTypesenseQuery, query);
-  console.log(flowResponse);
-  return flowResponse;
+  try {
+    const flowResponse = await generateTypesenseQuery(query);
+    console.log(flowResponse);
+    return { data: flowResponse, error: null };
+  } catch (error) {
+    return {
+      data: null,
+      error: { message: (error as CustomGenkitGenerationError).message },
+    };
+  }
+}
+
+class CustomGenkitGenerationError extends Error {
+  constructor(message = '') {
+    super(message);
+    this.message = message;
+  }
 }
