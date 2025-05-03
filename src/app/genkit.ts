@@ -143,12 +143,13 @@ Sorting hints:
   - When a user says something like "latest", sort by year.
 
 ## Car properties ##
+The following are the car properties that you can use to filter and sort the data. Completely ignore the field names that are not in the list.
 | Name | Data Type | Filter | Sort | Enum Values | Description |
 |------|-----------|--------|------|-------------|-------------|
 ${await getCachedCollectionProperties()}
 
 ### Query ###
-Include query only if both filter_by and sort_by are inadequate.
+Include query only if both filter_by and sort_by are inadequate. Don't include filter_by or sort_by in the ouput if their values are null.
 
 ### Output Instructions ###
 Provide the valid JSON with the correct filter and sorting format, only include fields with non-null values. Do not add extra text or explanations.`,
