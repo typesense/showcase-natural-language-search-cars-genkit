@@ -1,7 +1,7 @@
 'use server';
 
 import { genkit, GenkitError, z } from 'genkit';
-import { gemini15Flash, googleAI } from '@genkit-ai/googleai';
+import { gemini20FlashLite, googleAI } from '@genkit-ai/googleai';
 import {
   _CarSchemaResponse,
   TypesenseFieldDescriptionSchema,
@@ -20,7 +20,7 @@ const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
 
 const ai = genkit({
   plugins: [googleAI()],
-  model: gemini15Flash,
+  model: gemini20FlashLite,
 });
 // Dynamically provide collection data properties & facet values for the llm
 // Collection field `sort` property has to be explicitly set to true/false for the llm to enable/disable sorting
@@ -87,7 +87,7 @@ const generateTypesenseQuery = ai.defineFlow(
   async (query) => {
     try {
       const { output } = await ai.generate({
-        model: gemini15Flash,
+        model: gemini20FlashLite,
         config: {
           // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
           // temperature: 0,
@@ -101,10 +101,11 @@ const generateTypesenseQuery = ai.defineFlow(
 
 ## Filtering ##
 
-Matching values: {fieldName}: followed by a string value or an array of string values each separated by a comma. Enclose the string value with backticks if it contains parentheses. Examples:
+Matching values: {fieldName}: followed by a string value or an array of string values each separated by a comma. Enclose the string value with backticks if it contains parentheses \`()\`. Examples:
 - model:prius
 - make:[BMW,Nissan] returns cars that are manufactured by BMW OR Nissan.
 - fuel_type:\`premium unleaded (required)\`
+- fuel_type:\`premium unleaded (recommended)\`
 
 
 Numeric Filters: Use :[min..max] for ranges, or comparison operators like :>, :<, :>=, :<=, :=. Examples:
