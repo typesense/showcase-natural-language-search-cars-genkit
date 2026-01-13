@@ -1,7 +1,8 @@
 'use server';
 
 import { genkit, GenkitError, z } from 'genkit';
-import { gemini20FlashLite, googleAI } from '@genkit-ai/googleai';
+import { googleAI } from '@genkit-ai/google-genai';
+
 import {
   _CarSchemaResponse,
   TypesenseFieldDescriptionSchema,
@@ -17,10 +18,12 @@ import { logger } from 'genkit/logging';
 logger.setLogLevel('debug');
 
 const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
-
+const MODEL = googleAI.model('gemini-2.5-flash-lite', {
+  temperature: 0.8,
+});
 const ai = genkit({
   plugins: [googleAI()],
-  model: gemini20FlashLite,
+  model: MODEL,
 });
 // Dynamically provide collection data properties & facet values for the llm
 // Collection field `sort` property has to be explicitly set to true/false for the llm to enable/disable sorting
@@ -87,7 +90,7 @@ const generateTypesenseQuery = ai.defineFlow(
   async (query) => {
     try {
       const { output } = await ai.generate({
-        model: gemini20FlashLite,
+        model: MODEL,
         config: {
           // https://ai.google.dev/gemini-api/docs/models/generative-models#model-parameters
           // temperature: 0,

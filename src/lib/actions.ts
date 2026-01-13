@@ -13,6 +13,7 @@ export default function fetchCars(searchParams: _TypesenseQuery) {
         ...searchParams,
         query_by: 'make,model,market_category',
         per_page: 12,
+        page: pageParam,
       });
     const { per_page = 0 } = res.request_params;
 

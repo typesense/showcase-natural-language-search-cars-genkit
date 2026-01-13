@@ -22,9 +22,12 @@ export default function Heading() {
           href='https://typesense.org/'
           target='_blank'
           rel='noopener noreferrer'
-          className='text-[#D90368]'
         >
-          type<b>sense|</b>
+          <img
+            className='h-5'
+            src='https://typesense.org/typesense-logo.svg'
+            alt='Typesense logo'
+          />
         </a>
       </div>
     </div>

@@ -14,6 +14,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@genkit-ai/google-genai": "^1.27.0",
     "@genkit-ai/googleai": "^1.7.0",
     "@radix-ui/react-toast": "^1.2.1",
     "@tanstack/react-query": "^5.51.23",
@@ -21,9 +22,9 @@
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.1",
     "express": "^4.19.2",
-    "genkit": "^1.7.0",
+    "genkit": "^1.27.0",
     "lucide-react": "^0.427.0",
-    "next": "14.2.5",
+    "next": "^14.2.35",
     "react": "^18",
     "react-dom": "^18",
     "react-intersection-observer": "^9.13.0",
@@ -36,7 +37,7 @@
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "dotenv": "^16.4.5",
-    "genkit-cli": "^0.9.3",
+    "genkit-cli": "^1.27.0",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.5.4"
