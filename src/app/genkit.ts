@@ -18,7 +18,7 @@ import { logger } from 'genkit/logging';
 logger.setLogLevel('debug');
 
 const MAX_FACET_VALUES = Number(process.env.TYPESENSE_MAX_FACET_VALUES || '20');
-const MODEL = googleAI.model('gemini-2.5-flash-lite', {
+const MODEL = googleAI.model('gemini-flash-lite-latest', {
   temperature: 0.8,
 });
 const ai = genkit({
@@ -42,7 +42,7 @@ async function getCollectionProperties() {
       const { name, type, sort } = field;
       rows.push(
         // prettier-ignore
-        `|${name}|${type}|Yes|${booleanToYesNo(sort)}||${(collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ''}|`
+        `|${name}|${type}|Yes|${booleanToYesNo(sort)}||${(collection.metadata as TypesenseFieldDescriptionSchema)?.[name] || ''}|`,
       );
     }
   });
@@ -78,7 +78,7 @@ const getCachedCollectionProperties = unstable_cache(
     tags: ['getCollectionProperties'],
     revalidate: false, // Since the Typesense data for this repo is from a static dataset, we will cache the response indefinitely.
     // Because of that, changes made to the collection (e.g. updating field metadata) won't get reflected. When developing, use `getCollectionProperties` instead.
-  }
+  },
 );
 
 const generateTypesenseQuery = ai.defineFlow(
@@ -167,17 +167,16 @@ ${query}`,
     } catch (error) {
       console.log(error);
       throw new CustomGenkitGenerationError(
-        (error as GenkitError).message || 'Error generating Typesense query!'
+        (error as GenkitError).message || 'Error generating Typesense query!',
       );
     }
     throw new CustomGenkitGenerationError("Response doesn't satisfy schema.");
-  }
+  },
 );
 
 export async function callGenerateTypesenseQuery(query: string) {
   try {
     const flowResponse = await generateTypesenseQuery(query);
-    console.log(flowResponse);
     return { data: flowResponse, error: null };
   } catch (error) {
     return {
